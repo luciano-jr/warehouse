@@ -57,13 +57,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->criteria = $collection;
         $this->makeModel();
         $this->makePresenter();
-        $this->boot();
     }
-
-    /**
-     *
-     */
-    public function boot(){}
 
     /**
      * Specify Model class name
