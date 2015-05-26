@@ -14,7 +14,8 @@ use Illuminate\Support\Collection;
  * Class BaseRepository
  * @package Artesaos\Warehouse\Eloquent
  */
-abstract class BaseRepository implements RepositoryInterface, RepositoryCriteriaInterface {
+abstract class BaseRepository implements RepositoryInterface, RepositoryCriteriaInterface
+{
 
     /**
      * @var Application
@@ -50,20 +51,16 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
 
     /**
      * @param Application $app
+     * @param Collection $collection
+     * @throws RepositoryException
      */
-    public function __construct(Application $app)
+    public function __construct(Application $app, Collection $collection)
     {
         $this->app = $app;
-        $this->criteria = new Collection();
+        $this->criteria = $collection;
         $this->makeModel();
         $this->makePresenter();
-        $this->boot();
     }
-
-    /**
-     *
-     */
-    public function boot(){}
 
     /**
      * Specify Model class name
@@ -89,7 +86,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $model = $this->app->make($this->model());
 
-        if (!$model instanceof Model)
+        if ( ! $model instanceof Model)
         {
             throw new RepositoryException("Class {$this->model()} must be an instance of Illuminate\\Database\\Eloquent\\Model");
         }
@@ -139,11 +136,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->applyCriteria();
 
-        if( $this->model instanceof \Illuminate\Database\Eloquent\Builder ){
-            $results = $this->model->get($columns);
-        } else {
-            $results = $this->model->all($columns);
-        }
+        $results = $this->isBuilderInstance($columns);
 
         return $this->parserResult($results);
     }
@@ -277,7 +270,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->model = $criteria->apply($this->model, $this);
         $results = $this->model->get();
-        return $this->parserResult( $results );
+        return $this->parserResult($results);
     }
 
     /**
@@ -300,14 +293,14 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     protected function applyCriteria()
     {
 
-        if( $this->skipCriteria === true )
+        if ( $this->skipCriteria === true )
         {
             return  $this;
         }
 
         $criteria = $this->getCriteria();
 
-        if( $criteria )
+        if ( $criteria )
         {
             foreach($criteria as $c)
             {
@@ -329,11 +322,24 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
      */
     public function parserResult($result)
     {
-        if( $this->presenter instanceof PresenterInterface )
+        if ( $this->presenter instanceof PresenterInterface )
         {
             return $this->presenter->present($result);
         }
 
         return $result;
+    }
+
+    /**
+     * @param $results
+     * @return mixed
+     */
+    private function isBuilderInstance($results)
+    {
+        if ( $this->model instanceof \Illuminate\Database\Eloquent\Builder ) {
+            return $this->model->get($results);
+        } else {
+            return $this->model->all($results);
+        }
     }
 }
