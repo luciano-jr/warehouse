@@ -83,7 +83,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $model = $this->app->make($this->model());
 
-        if (!$model instanceof Model)
+        if ( ! $model instanceof Model)
         {
             throw new RepositoryException("Class {$this->model()} must be an instance of Illuminate\\Database\\Eloquent\\Model");
         }
@@ -133,11 +133,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->applyCriteria();
 
-        if( $this->model instanceof \Illuminate\Database\Eloquent\Builder ){
-            $results = $this->model->get($columns);
-        } else {
-            $results = $this->model->all($columns);
-        }
+        $results = $this->isBuilderInstance($columns);
 
         return $this->parserResult($results);
     }
@@ -323,11 +319,24 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
      */
     public function parserResult($result)
     {
-        if( $this->presenter instanceof PresenterInterface )
+        if ( $this->presenter instanceof PresenterInterface )
         {
             return $this->presenter->present($result);
         }
 
         return $result;
+    }
+
+    /**
+     * @param $results
+     * @return mixed
+     */
+    private function isBuilderInstance($results)
+    {
+        if ($this->model instanceof \Illuminate\Database\Eloquent\Builder) {
+            return  $this->model->get($results);
+        } else {
+            return $this->model->all($results);
+        }
     }
 }
