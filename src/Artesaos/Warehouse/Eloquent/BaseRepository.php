@@ -51,10 +51,10 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     /**
      * @param Application $app
      */
-    public function __construct(Application $app)
+    public function __construct(Application $app, Collection $collection)
     {
         $this->app = $app;
-        $this->criteria = new Collection();
+        $this->criteria = $collection;
         $this->makeModel();
         $this->makePresenter();
         $this->boot();
